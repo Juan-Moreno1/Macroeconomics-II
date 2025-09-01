@@ -1,0 +1,60 @@
+---
+title: "Phillips Curve"
+format: html
+---
+## Fase de procesamiento de los datos
+ Vamos a realizar la lectura de las bases de datos de FRED
+```{r}
+library(readr)
+library(dplyr)
+library(magrittr)
+library(urca)
+library(tidyr)
+library(tseries)
+library(dynlm)
+DFU <- read.csv("LRHUTTTTNLA156N.csv")
+DFI <- read.csv("FPCPITOTLZGNLD.csv")
+
+```
+
+Ya con los datos leidos vamos a hacer la union de los datos
+
+```{r}
+DFF <- full_join(DFU, DFI, by ='observation_date')
+View(DFF)
+DFF <- DFF |> rename(U = LRHUTTTTNLA156N) |> rename(I = FPCPITOTLZGNLD) |>  na.omit()
+modelo <- lm(I ~ lag(I,1) + U + lag(U,1), data=DFF)
+adf.test(na.omit(DFF$I))
+adf.test(na.omit(DFF$U))
+summary(modelo)
+```
+
+Si observamos probablemente tenemos problemas de multicolinealidad ya que en la regresion tenemos la variable y su periodo anterior.
+
+
+```{r}
+# Prueba de estacionariedad
+summary(ur.df(DFF$I, type="drift", selectlags="AIC"))
+
+summary(ur.df(DFF$U, type="drift", selectlags="AIC"))
+
+
+DFF$dI <- c(NA, diff(DFF$I))
+DFF$dU <- c(NA, diff(DFF$U))
+
+
+
+# Nueva regresión en diferencias
+lm(dI ~ lag(dI,1) + dU + lag(dU,1), data=DFF)
+modelo_dyn <- dynlm(I ~ L(I,1) + U + L(U,1), data = DFF)
+summary(modelo_dyn)
+
+library(dynlm)
+
+# Supongamos que tu data.frame ya es ts:
+DFF_ts <- ts(DFF[,c("I","U")],frequency = )
+
+modelo_dyn <- dynlm(I ~ L(I,1) + U + L(U,1), data = DFF_ts)
+summary(modelo_dyn)
+
+```
