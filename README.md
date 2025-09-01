@@ -1,2 +1,3 @@
 # Macroeconomics-II
-Repository for curve of phillips
+Repository for phillips curve
+
