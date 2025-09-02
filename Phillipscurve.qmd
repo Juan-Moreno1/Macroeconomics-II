@@ -20,9 +20,12 @@ DFI <- read.csv("FPCPITOTLZGNLD.csv")
 Ya con los datos leidos vamos a hacer la union de los datos
 
 ```{r}
+#limpieza de datos y union
 DFF <- full_join(DFU, DFI, by ='observation_date')
-View(DFF)
+
+
 DFF <- DFF |> rename(U = LRHUTTTTNLA156N) |> rename(I = FPCPITOTLZGNLD) |>  na.omit()
+#Prueba con linear regression 
 modelo <- lm(I ~ lag(I,1) + U + lag(U,1), data=DFF)
 adf.test(na.omit(DFF$I))
 adf.test(na.omit(DFF$U))
