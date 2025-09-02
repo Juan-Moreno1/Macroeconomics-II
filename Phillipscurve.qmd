@@ -27,6 +27,11 @@ modelo <- lm(I ~ lag(I,1) + U + lag(U,1), data=DFF)
 adf.test(na.omit(DFF$I))
 adf.test(na.omit(DFF$U))
 summary(modelo)
+#Este esta mal
+modelo_dyn <- dynlm(I ~ L(I,1) + U + L(U,1), data = DFF)
+summary(modelo_dyn)
+# este si es
+
 ```
 
 Si observamos probablemente tenemos problemas de multicolinealidad ya que en la regresion tenemos la variable y su periodo anterior.
@@ -49,12 +54,5 @@ lm(dI ~ lag(dI,1) + dU + lag(dU,1), data=DFF)
 modelo_dyn <- dynlm(I ~ L(I,1) + U + L(U,1), data = DFF)
 summary(modelo_dyn)
 
-library(dynlm)
-
-# Supongamos que tu data.frame ya es ts:
-DFF_ts <- ts(DFF[,c("I","U")],frequency = )
-
-modelo_dyn <- dynlm(I ~ L(I,1) + U + L(U,1), data = DFF_ts)
-summary(modelo_dyn)
 
 ```
