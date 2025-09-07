@@ -1,6 +1,6 @@
 ---
 title: "Curva de Phillips para Paises Bajos"
-format: pdf
+format: html
 ---
 
 ### Introduccíon:
@@ -11,33 +11,43 @@ Los Países Bajos son un país de interés para conocer si los modelos de la cur
 
 Este articulo usaremos herramientas teoricás propias de la macroeconomía para el analisis de la curva de Phillips en Países Bajos, y para comprabar su verecidad en Páises Bajos usaremos intrumentos econometricos como son las series de tiempo con minimos cuadrados ordinales (OLS).
 
-</div>
+Para este analisis usaremos los datos de FRED para los datos de desempleo (U) y inflación (I), en el periodo de 1983 a 2024, para el cual necesitaremos hacerle una limpieza basica y una unión.
 
 </div>
 
-Para este analisis usaremos los datos de FRED para los datos de desempleo (U) y inflación (I), para los cuales necesitaremos hacerle una limpieza basica y una unión.
+#### Introducción, Código:
 
-</div>
+<div>
 
 Correremos las librerias de R necesarias para hacer las bases.
-```{r}
+
+</div>
+
+```{r,message=FALSE, warning=FALSE}
 if(!require(readr)) install.packages("readr"); library(readr)
 if(!require(dplyr)) install.packages("dplyr"); library(dplyr)
 if(!require(ggplot2)) install.packages("ggplot2"); library(ggplot2)
 if(!require(tidyr)) install.packages("tidyr"); library(tidyr)
 ```
 
+<div>
+
 En este apartado cargaremos las bases de datos en nuestro environment.
 
-```{r}
+</div>
+
+```{r,  message=FALSE, warning=FALSE}
 DFU <- read.csv("LRHUTTTTNLA156N.csv")
 DFI <- read.csv("FPCPITOTLZGNLD.csv")
 ```
 
+<div>
 
 Ahora haremos la limpieza de NA y union de las bases necesarias para nuestro modelo.
 
-```{r}
+</div>
+
+```{r,  message=FALSE, warning=FALSE}
 #limpieza de datos y union
 DFF <- full_join(DFU, DFI, by ='observation_date')
 # DFF quedara definida como nuestra base
@@ -47,11 +57,54 @@ DFF$observation_date <- as.Date(DFF$observation_date, format = "%Y-%m-%d")
  # aca le damo el formato de fechas, ademas del el renombre de las variables y limpieza de NA
 ```
 
-Ya con esto tendriamos nuestra base cargada.
+<div>
 
-## Conceptos : Que es curva de phillips y nairu : Juan Pablo
+Ya con esto tendriamos nuestra base cargada y limpia.
 
-## Analisis explotario: como era Paises Bajos, inflacion y desempleo : Camilo
+</div>
+
+### Conceptos : Que es curva de phillips y la nairu
+
+### Analisis explotario: como era Paises Bajos, inflación y desempleo.
+
+<div>
+
+La economía de los países bajos ha demostrado ser bastante dinámica y estable, su ubicación geográfica le ha permitido establecer vínculos comerciales con grandes potencias europeas y con el resto del mundo convirtiéndose en un centro vital del comercio. Su balance macroeconómico solido ha permitido en las últimas décadas un desempleo bajo-medio debido en gran parte a que cuenta con una fuerza altamente calificada y educada gracias a su sistema de educación de alta calidad, otro factor importante a tener en cuenta es su banco central, el cual se encarga de la estabilidad económica mediante las tasas de interés, buscando un balance entre el crecimiento y la estabilidad de los precios (teniendo como objetivo una tasa del 2,4%). 
+
+En el caso de la inflación y para tener una estabilidad en los precios, su gobierno busca generar políticas fiscales que mantengan un presupuesto equilibrado con el objetico de reducir la deuda pública y tener un sistema eficiente de impuestos. Un factor clave que ayuda a los países bajos con su gran volumen de comercio es que cuenta con el puerto más grande de Europa ubicado en Róterdam manejando millones de toneladas métricas al año y siendo una puerta de entrada crucial para el comercio de Europa y del mundo. 
+
+</div>
+
+```{r, warning = FALSE}
+summary(DFF$I)
+plor2<- ggplot(DFF, aes(y = I)) +
+  geom_boxplot(fill = "skyblue", alpha = 0.7) +
+  labs(title = "Caja de Bigotes - Inflacion (I)", y = "I") +
+  theme_minimal()
+plor2
+
+```
+
+<div>
+
+Hemos encontrado que a lo largo del periodo estudiado la inflación típica de los países bajos ha estado entre un 1,3% y un 2,7% reflejando asi una economía estable durante la mayor parte del periodo. Uno de los picos más altos de inflación fue del 10% el cual probablemente se generó debido a episodios globales o tambien llamados crisis inflacionarias las cuales normalmente afectan a gran parte de Europa. Por último, podemos observar que hay una cercanía entre su media y su mediana (2,19 y 2,13 respectivamente) lo cual sugiere una distribución simétrica. 
+
+</div>
+
+```{r, warning=FALSE}
+plor<- ggplot(DFF, aes(y = U)) +
+  geom_boxplot(fill = "skyblue", alpha = 0.7) +
+  labs(title = "Caja de Bigotes - Desempleo (U)", y = "U") +
+  theme_minimal()
+summary(DFF$U)
+plor
+```
+
+<div>
+
+Por el lado del desempleo observamos un rango moderado (entre el 5 y el 7%), así mismo nuevamente su media y mediana se encuentra bastante cerca una de la otra (6,08 y 6,11) lo cual si lo unimos con el rango obtenido concluimos que el desempleo ha sido estable y sin valores atípicos representados en el diagrama de bigotes. Analizando sus mínimos y máximos, observamos un 3,08 en su mínimo que refleja un periodo de pleno empleo y un 9,51 en su máximo que puede reflejar un periodo de recesión en toda Europa. 
+
+</div>
 
 ### Modelo:
 
@@ -67,16 +120,11 @@ donde $\pi$ es la inflación y $\pi_{t-1}$ es su resago (el periodo anterior), $
 
 Vamos a realizar la lectura de las bases de datos de FRED
 
-
-
-
-
 Ya con los datos leidos vamos a hacer la union de los datos
-
 
 Vamos a hacer analisis exploratorio de los datos Media
 
-```{r}
+```{r, warning=FALSE}
 plor<- ggplot(DFF, aes(y = U)) +
   geom_boxplot(fill = "skyblue", alpha = 0.7) +
   labs(title = "Caja de Bigotes - Desempleo (U)", y = "U") +
@@ -88,12 +136,11 @@ plor2<- ggplot(DFF, aes(y = I)) +
   labs(title = "Caja de Bigotes - Inflacion (I)", y = "I") +
   theme_minimal()
 plor2
-summary(DFF$I)
 ```
 
 En este archivo vamos a realizar un analisis de la curva de Phillips para Paises Bajos
 
-```{r}
+```{r, warning=FALSE}
 #Prueba con lM
 modelo <- lm(I ~ lag(I,1) + U + lag(U,1), data=DFF)
 summary(modelo)
