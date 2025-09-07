@@ -13,11 +13,53 @@ Este articulo usaremos herramientas teoricás propias de la macroeconomía para 
 
 </div>
 
+</div>
+
+Para este analisis usaremos los datos de FRED para los datos de desempleo (U) y inflación (I), para los cuales necesitaremos hacerle una limpieza basica y una unión.
+
+</div>
+
+Correremos las librerias de R necesarias para hacer las bases.
+```{r}
+if(!require(readr)) install.packages("readr"); library(readr)
+if(!require(dplyr)) install.packages("dplyr"); library(dplyr)
+if(!require(ggplot2)) install.packages("ggplot2"); library(ggplot2)
+if(!require(tidyr)) install.packages("tidyr"); library(tidyr)
+```
+
+En este apartado cargaremos las bases de datos en nuestro environment.
+
+```{r}
+DFU <- read.csv("LRHUTTTTNLA156N.csv")
+DFI <- read.csv("FPCPITOTLZGNLD.csv")
+```
+
+
+Ahora haremos la limpieza de NA y union de las bases necesarias para nuestro modelo.
+
+```{r}
+#limpieza de datos y union
+DFF <- full_join(DFU, DFI, by ='observation_date')
+# DFF quedara definida como nuestra base
+DFF <- DFF |> rename(U = LRHUTTTTNLA156N) |> rename(I = FPCPITOTLZGNLD) |>  na.omit() 
+
+DFF$observation_date <- as.Date(DFF$observation_date, format = "%Y-%m-%d")
+ # aca le damo el formato de fechas, ademas del el renombre de las variables y limpieza de NA
+```
+
+Ya con esto tendriamos nuestra base cargada.
+
 ## Conceptos : Que es curva de phillips y nairu : Juan Pablo
 
 ## Analisis explotario: como era Paises Bajos, inflacion y desempleo : Camilo
 
-## Modelo Diego
+### Modelo:
+
+Para analizar y concluir usaremos un modelo econometríco de la siguiente forma:
+
+$\pi_t= \beta_0 + \beta_1\pi_{t-1}+\beta_2u_t+\beta_3u_{t-1}+\epsilon$
+
+donde $\pi$ es la inflación y $\pi_{t-1}$ es su resago (el periodo anterior), $u_t$ es el desempleo y $u_{t-1}$ es su resago, además del termino de error $\epsilon$
 
 ## Resultados: Juan PAblo
 
@@ -25,32 +67,12 @@ Este articulo usaremos herramientas teoricás propias de la macroeconomía para 
 
 Vamos a realizar la lectura de las bases de datos de FRED
 
-```{r}
-library(readr)
-library(dplyr)
-library(ggplot2)
-library(magrittr)
-library(urca)
-library(tidyr)
-library(zoo)
-library(forecast)
 
 
-```
 
-```{r}
-DFU <- read.csv("LRHUTTTTNLA156N.csv")
-DFI <- read.csv("FPCPITOTLZGNLD.csv")
-```
 
 Ya con los datos leidos vamos a hacer la union de los datos
 
-```{r}
-#limpieza de datos y union
-DFF <- full_join(DFU, DFI, by ='observation_date')
-DFF <- DFF |> rename(U = LRHUTTTTNLA156N) |> rename(I = FPCPITOTLZGNLD) |>  na.omit() 
- DFF<- as.Date(DFF$observation_date format = "%Y-%m-%d")
-```
 
 Vamos a hacer analisis exploratorio de los datos Media
 
