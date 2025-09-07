@@ -1,20 +1,46 @@
 ---
-title: "Phillips Curve"
-format: html
+title: "Curva de Phillips para Paises Bajos"
+format: pdf
 ---
-## Fase de procesamiento de los datos
- Vamos a realizar la lectura de las bases de datos de FRED
+
+### Introduccíon:
+
+<div>
+
+Los Países Bajos son un país de interés para conocer si los modelos de la curva de Phillips funcionan, ya que presenta características diferenciales a otros países europeos. Cuenta con una gran agroindustria, donde uno de sus principales bienes de exportación son productos agrícolas y flores. Además, posee uno de los puertos más grandes de Europa en Ámsterdam, lo cual le permite ser un punto estratégico para la región. De igual manera, cuenta con un gran estado de bienestar, que implementa políticas públicas para la reducción del desempleo. Asimismo, dispone de un Banco Central cuya misión es garantizar la estabilidad de los precios.
+
+Este articulo usaremos herramientas teoricás propias de la macroeconomía para el analisis de la curva de Phillips en Países Bajos, y para comprabar su verecidad en Páises Bajos usaremos intrumentos econometricos como son las series de tiempo con minimos cuadrados ordinales (OLS).
+
+</div>
+
+## Conceptos : Que es curva de phillips y nairu : Juan Pablo
+
+## Analisis explotario: como era Paises Bajos, inflacion y desempleo : Camilo
+
+## Modelo Diego
+
+## Resultados: Juan PAblo
+
+## Conclusiones : Camilo
+
+Vamos a realizar la lectura de las bases de datos de FRED
+
 ```{r}
 library(readr)
 library(dplyr)
+library(ggplot2)
 library(magrittr)
 library(urca)
 library(tidyr)
-library(tseries)
-library(dynlm)
+library(zoo)
+library(forecast)
+
+
+```
+
+```{r}
 DFU <- read.csv("LRHUTTTTNLA156N.csv")
 DFI <- read.csv("FPCPITOTLZGNLD.csv")
-
 ```
 
 Ya con los datos leidos vamos a hacer la union de los datos
@@ -22,40 +48,32 @@ Ya con los datos leidos vamos a hacer la union de los datos
 ```{r}
 #limpieza de datos y union
 DFF <- full_join(DFU, DFI, by ='observation_date')
-
-
-DFF <- DFF |> rename(U = LRHUTTTTNLA156N) |> rename(I = FPCPITOTLZGNLD) |>  na.omit()
-#Prueba con linear regression 
-modelo <- lm(I ~ lag(I,1) + U + lag(U,1), data=DFF)
-adf.test(na.omit(DFF$I))
-adf.test(na.omit(DFF$U))
-summary(modelo)
-#Este esta mal
-modelo_dyn <- dynlm(I ~ L(I,1) + U + L(U,1), data = DFF)
-summary(modelo_dyn)
-# este si es
-
+DFF <- DFF |> rename(U = LRHUTTTTNLA156N) |> rename(I = FPCPITOTLZGNLD) |>  na.omit() 
+ DFF<- as.Date(DFF$observation_date format = "%Y-%m-%d")
 ```
 
-Si observamos probablemente tenemos problemas de multicolinealidad ya que en la regresion tenemos la variable y su periodo anterior.
-
+Vamos a hacer analisis exploratorio de los datos Media
 
 ```{r}
-# Prueba de estacionariedad
-summary(ur.df(DFF$I, type="drift", selectlags="AIC"))
+plor<- ggplot(DFF, aes(y = U)) +
+  geom_boxplot(fill = "skyblue", alpha = 0.7) +
+  labs(title = "Caja de Bigotes - Desempleo (U)", y = "U") +
+  theme_minimal()
+plor
+summary(DFF$U)
+plor2<- ggplot(DFF, aes(y = I)) +
+  geom_boxplot(fill = "skyblue", alpha = 0.7) +
+  labs(title = "Caja de Bigotes - Inflacion (I)", y = "I") +
+  theme_minimal()
+plor2
+summary(DFF$I)
+```
 
-summary(ur.df(DFF$U, type="drift", selectlags="AIC"))
+En este archivo vamos a realizar un analisis de la curva de Phillips para Paises Bajos
 
-
-DFF$dI <- c(NA, diff(DFF$I))
-DFF$dU <- c(NA, diff(DFF$U))
-
-
-
-# Nueva regresión en diferencias
-lm(dI ~ lag(dI,1) + dU + lag(dU,1), data=DFF)
-modelo_dyn <- dynlm(I ~ L(I,1) + U + L(U,1), data = DFF)
-summary(modelo_dyn)
-
+```{r}
+#Prueba con lM
+modelo <- lm(I ~ lag(I,1) + U + lag(U,1), data=DFF)
+summary(modelo)
 
 ```
