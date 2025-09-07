@@ -1,6 +1,6 @@
 ---
 title: "Curva de Phillips para Paises Bajos"
-format: html
+format: pdf
 ---
 
 ### Introduccíon:
@@ -28,6 +28,7 @@ if(!require(readr)) install.packages("readr"); library(readr)
 if(!require(dplyr)) install.packages("dplyr"); library(dplyr)
 if(!require(ggplot2)) install.packages("ggplot2"); library(ggplot2)
 if(!require(tidyr)) install.packages("tidyr"); library(tidyr)
+if(!require(dynlm)) install.packages("dynlm"); library(dynlm)
 ```
 
 <div>
@@ -108,41 +109,60 @@ Por el lado del desempleo observamos un rango moderado (entre el 5 y el 7%), as�
 
 ### Modelo:
 
+<div>
+
 Para analizar y concluir usaremos un modelo econometríco de la siguiente forma:
 
 $\pi_t= \beta_0 + \beta_1\pi_{t-1}+\beta_2u_t+\beta_3u_{t-1}+\epsilon$
 
-donde $\pi$ es la inflación y $\pi_{t-1}$ es su resago (el periodo anterior), $u_t$ es el desempleo y $u_{t-1}$ es su resago, además del termino de error $\epsilon$
+donde $\pi$ es la inflación y $\pi_{t-1}$ es su resago (el periodo anterior), $u_t$ es el desempleo y $u_{t-1}$ es su resago, además del termino de error $\epsilon$ Este modelo usara minimos cuadrados ordinales para hayar los betas. La estructura del modelo sería un proceso autoregresivo de orden uno, además donde la variable u (desempleo) y su resago explica $\pi$.
 
-## Resultados: Juan PAblo
+Por otro lado la inflación se puede explicar por las expectativas de inflación, que las expresaremos con el siguiente modelo:
 
-## Conclusiones : Camilo
+$\pi_t = \alpha_o + \pi^e_t + \alpha_1 u_t + \epsilon_t$
 
-Vamos a realizar la lectura de las bases de datos de FRED
+Ahora tenemos el siguiente modelo para la expectativa de inflación:
 
-Ya con los datos leidos vamos a hacer la union de los datos
+$\pi^e_t = \leftthreetimes\pi^e_{t-1} + (1-\leftthreetimes)\pi_{t-1}$
 
-Vamos a hacer analisis exploratorio de los datos Media
+donde
 
-```{r, warning=FALSE}
-plor<- ggplot(DFF, aes(y = U)) +
-  geom_boxplot(fill = "skyblue", alpha = 0.7) +
-  labs(title = "Caja de Bigotes - Desempleo (U)", y = "U") +
-  theme_minimal()
-plor
-summary(DFF$U)
-plor2<- ggplot(DFF, aes(y = I)) +
-  geom_boxplot(fill = "skyblue", alpha = 0.7) +
-  labs(title = "Caja de Bigotes - Inflacion (I)", y = "I") +
-  theme_minimal()
-plor2
-```
+$\pi^e_{t-1}= \pi_{t-1} -\alpha_0-\alpha_1u_{t-1}-\epsilon_{t-1}$
 
-En este archivo vamos a realizar un analisis de la curva de Phillips para Paises Bajos
+y despejando la expectativa de inflación ya que la espectativa no se le pueden dar valores tenemos
+
+$\pi_t = \alpha_0(1-\leftthreetimes)+ \pi_{t-1}+\alpha_1u_t-\alpha_1\leftthreetimes(u_{t-1})+\epsilon_{t}-\leftthreetimes\epsilon_{t-1}$
+
+Para este modelo podemos concluir que:
+
+$\beta_0= \alpha_0(1-\leftthreetimes)$
+
+$\beta_1 = \beta_1$
+
+$\beta_2 = \alpha_1$
+
+$\beta_3 = -\alpha_1\leftthreetimes$
+
+</div>
 
 ```{r, warning=FALSE}
 #Prueba con lM
 modelo <- lm(I ~ lag(I,1) + U + lag(U,1), data=DFF)
 summary(modelo)
-
 ```
+
+<div>
+
+En este modelo podemos observar como existe significancia del 5% para $\beta_0$ y para $\beta_1$ una signifancia del 10%. Para los demás $\beta$ no tiene signifancia pero no es relevante para nuestro modelo.
+
+Los $\alpha$ y los $\leftthreetimes$ nos van a ayudar a encontrar la nairu.
+
+</div>
+
+<div>
+
+sultados: Juan PAblo
+
+</div>
+
+## Conclusiones

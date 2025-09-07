@@ -143,7 +143,8 @@ window.Quarto = {
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="sc">!</span><span class="fu">require</span>(readr)) <span class="fu">install.packages</span>(<span class="st">"readr"</span>); <span class="fu">library</span>(readr)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="sc">!</span><span class="fu">require</span>(dplyr)) <span class="fu">install.packages</span>(<span class="st">"dplyr"</span>); <span class="fu">library</span>(dplyr)</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="sc">!</span><span class="fu">require</span>(ggplot2)) <span class="fu">install.packages</span>(<span class="st">"ggplot2"</span>); <span class="fu">library</span>(ggplot2)</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="sc">!</span><span class="fu">require</span>(tidyr)) <span class="fu">install.packages</span>(<span class="st">"tidyr"</span>); <span class="fu">library</span>(tidyr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="sc">!</span><span class="fu">require</span>(tidyr)) <span class="fu">install.packages</span>(<span class="st">"tidyr"</span>); <span class="fu">library</span>(tidyr)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="sc">!</span><span class="fu">require</span>(dynlm)) <span class="fu">install.packages</span>(<span class="st">"dynlm"</span>); <span class="fu">library</span>(dynlm)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div>
 <p>En este apartado cargaremos las bases de datos en nuestro environment.</p>
@@ -225,54 +226,28 @@ window.Quarto = {
 </section>
 <section id="modelo" class="level3">
 <h3 class="anchored" data-anchor-id="modelo">Modelo:</h3>
+<div>
 <p>Para analizar y concluir usaremos un modelo econometríco de la siguiente forma:</p>
 <p><span class="math inline">\(\pi_t= \beta_0 + \beta_1\pi_{t-1}+\beta_2u_t+\beta_3u_{t-1}+\epsilon\)</span></p>
-<p>donde <span class="math inline">\(\pi\)</span> es la inflación y <span class="math inline">\(\pi_{t-1}\)</span> es su resago (el periodo anterior), <span class="math inline">\(u_t\)</span> es el desempleo y <span class="math inline">\(u_{t-1}\)</span> es su resago, además del termino de error <span class="math inline">\(\epsilon\)</span></p>
-</section>
-<section id="resultados-juan-pablo" class="level2">
-<h2 class="anchored" data-anchor-id="resultados-juan-pablo">Resultados: Juan PAblo</h2>
-</section>
-<section id="conclusiones-camilo" class="level2">
-<h2 class="anchored" data-anchor-id="conclusiones-camilo">Conclusiones : Camilo</h2>
-<p>Vamos a realizar la lectura de las bases de datos de FRED</p>
-<p>Ya con los datos leidos vamos a hacer la union de los datos</p>
-<p>Vamos a hacer analisis exploratorio de los datos Media</p>
+<p>donde <span class="math inline">\(\pi\)</span> es la inflación y <span class="math inline">\(\pi_{t-1}\)</span> es su resago (el periodo anterior), <span class="math inline">\(u_t\)</span> es el desempleo y <span class="math inline">\(u_{t-1}\)</span> es su resago, además del termino de error <span class="math inline">\(\epsilon\)</span> Este modelo usara minimos cuadrados ordinales para hayar los betas. La estructura del modelo sería un proceso autoregresivo de orden uno, además donde la variable u (desempleo) y su resago explica <span class="math inline">\(\pi\)</span>.</p>
+<p>Por otro lado la inflación se puede explicar por las expectativas de inflación, que las expresaremos con el siguiente modelo:</p>
+<p><span class="math inline">\(\pi_t = \alpha_o + \pi^e_t + \alpha_1 u_t + \epsilon_t\)</span></p>
+<p>Ahora tenemos el siguiente modelo para la expectativa de inflación:</p>
+<p><span class="math inline">\(\pi^e_t = \leftthreetimes\pi^e_{t-1} + (1-\leftthreetimes)\pi_{t-1}\)</span></p>
+<p>donde</p>
+<p><span class="math inline">\(\pi^e_{t-1}= \pi_{t-1} -\alpha_0-\alpha_1u_{t-1}-\epsilon_{t-1}\)</span></p>
+<p>y despejando la expectativa de inflación ya que la espectativa no se le pueden dar valores tenemos</p>
+<p><span class="math inline">\(\pi_t = \alpha_0(1-\leftthreetimes)+ \pi_{t-1}+\alpha_1u_t-\alpha_1\leftthreetimes(u_{t-1})+\epsilon_{t}-\leftthreetimes\epsilon_{t-1}\)</span></p>
+<p>Para este modelo podemos concluir que:</p>
+<p><span class="math inline">\(\beta_0= \alpha_0(1-\leftthreetimes)\)</span></p>
+<p><span class="math inline">\(\beta_1 = \beta_1\)</span></p>
+<p><span class="math inline">\(\beta_2 = \alpha_1\)</span></p>
+<p><span class="math inline">\(\beta_3 = -\alpha_1\leftthreetimes\)</span></p>
+</div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>plor<span class="ot">&lt;-</span> <span class="fu">ggplot</span>(DFF, <span class="fu">aes</span>(<span class="at">y =</span> U)) <span class="sc">+</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>(<span class="at">fill =</span> <span class="st">"skyblue"</span>, <span class="at">alpha =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Caja de Bigotes - Desempleo (U)"</span>, <span class="at">y =</span> <span class="st">"U"</span>) <span class="sc">+</span></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>plor</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="Phillipscurve_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(DFF<span class="sc">$</span>U)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-  3.075   4.854   6.075   6.106   7.329   9.508 </code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>plor2<span class="ot">&lt;-</span> <span class="fu">ggplot</span>(DFF, <span class="fu">aes</span>(<span class="at">y =</span> I)) <span class="sc">+</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>(<span class="at">fill =</span> <span class="st">"skyblue"</span>, <span class="at">alpha =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Caja de Bigotes - Inflacion (I)"</span>, <span class="at">y =</span> <span class="st">"I"</span>) <span class="sc">+</span></span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>plor2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="Phillipscurve_files/figure-html/unnamed-chunk-6-2.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-</div>
-<p>En este archivo vamos a realizar un analisis de la curva de Phillips para Paises Bajos</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Prueba con lM</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>modelo <span class="ot">&lt;-</span> <span class="fu">lm</span>(I <span class="sc">~</span> <span class="fu">lag</span>(I,<span class="dv">1</span>) <span class="sc">+</span> U <span class="sc">+</span> <span class="fu">lag</span>(U,<span class="dv">1</span>), <span class="at">data=</span>DFF)</span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(modelo)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Prueba con lM</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>modelo <span class="ot">&lt;-</span> <span class="fu">lm</span>(I <span class="sc">~</span> <span class="fu">lag</span>(I,<span class="dv">1</span>) <span class="sc">+</span> U <span class="sc">+</span> <span class="fu">lag</span>(U,<span class="dv">1</span>), <span class="at">data=</span>DFF)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(modelo)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Call:
@@ -297,6 +272,16 @@ Multiple R-squared:  0.3029,    Adjusted R-squared:  0.2464
 F-statistic:  5.36 on 3 and 37 DF,  p-value: 0.003627</code></pre>
 </div>
 </div>
+<div>
+<p>En este modelo podemos observar como existe significancia del 5% para <span class="math inline">\(\beta_0\)</span> y para <span class="math inline">\(\beta_1\)</span> una signifancia del 10%. Para los demás <span class="math inline">\(\beta\)</span> no tiene signifancia pero no es relevante para nuestro modelo.</p>
+<p>Los <span class="math inline">\(\alpha\)</span> y los <span class="math inline">\(\leftthreetimes\)</span> nos van a ayudar a encontrar la nairu.</p>
+</div>
+<div>
+<p>sultados: Juan PAblo</p>
+</div>
+</section>
+<section id="conclusiones" class="level2">
+<h2 class="anchored" data-anchor-id="conclusiones">Conclusiones</h2>
 </section>
 
 </main>
