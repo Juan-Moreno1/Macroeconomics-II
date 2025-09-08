@@ -1,5 +1,7 @@
 ---
-title: "Curva de Phillips para Paises Bajos"
+title: "Curva de Phillips para Países Bajos"
+author: "Juan Diego Moreno Sánchez"
+date: "2025-09-07"
 format: pdf
 ---
 
@@ -13,99 +15,72 @@ Este articulo usaremos herramientas teoricás propias de la macroeconomía para 
 
 Para este analisis usaremos los datos de FRED para los datos de desempleo (U) y inflación (I), en el periodo de 1983 a 2024, para el cual necesitaremos hacerle una limpieza basica y una unión.
 
-</div>
-
-#### Introducción, Código:
-
-<div>
-
-Correremos las librerias de R necesarias para hacer las bases.
+#### 
 
 </div>
 
-```{r,message=FALSE, warning=FALSE}
+```{r,message=FALSE, warning=FALSE, echo=FALSE}
 if(!require(readr)) install.packages("readr"); library(readr)
 if(!require(dplyr)) install.packages("dplyr"); library(dplyr)
 if(!require(ggplot2)) install.packages("ggplot2"); library(ggplot2)
 if(!require(tidyr)) install.packages("tidyr"); library(tidyr)
-if(!require(dynlm)) install.packages("dynlm"); library(dynlm)
 ```
 
-<div>
-
-En este apartado cargaremos las bases de datos en nuestro environment.
-
-</div>
-
-```{r,  message=FALSE, warning=FALSE}
+```{r,  message=FALSE, warning=FALSE, echo=FALSE}
 DFU <- read.csv("LRHUTTTTNLA156N.csv")
 DFI <- read.csv("FPCPITOTLZGNLD.csv")
 ```
 
-<div>
-
-Ahora haremos la limpieza de NA y union de las bases necesarias para nuestro modelo.
-
-</div>
-
-```{r,  message=FALSE, warning=FALSE}
+```{r,  message=FALSE, warning=FALSE, echo=FALSE}
 #limpieza de datos y union
 DFF <- full_join(DFU, DFI, by ='observation_date')
 # DFF quedara definida como nuestra base
-DFF <- DFF |> rename(U = LRHUTTTTNLA156N) |> rename(I = FPCPITOTLZGNLD) |>  na.omit() 
+DFF <- DFF |> rename(U = LRHUTTTTNLA156N) |> rename(I = FPCPITOTLZGNLD) |>
+    na.omit() 
 
 DFF$observation_date <- as.Date(DFF$observation_date, format = "%Y-%m-%d")
- # aca le damo el formato de fechas, ademas del el renombre de las variables y limpieza de NA
+ # aca le damo el formato de fechas, ademas del el renombre de las variables y
+ #limpieza de NA
 ```
-
-<div>
-
-Ya con esto tendriamos nuestra base cargada y limpia.
-
-</div>
 
 ### Conceptos : Que es curva de phillips y la nairu
 
+deweeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeee eeeeeeeeeee e
+
 ### Analisis explotario: como era Paises Bajos, inflación y desempleo.
 
-<div>
+```{r, warning = FALSE, echo = FALSE}
 
-La economía de los países bajos ha demostrado ser bastante dinámica y estable, su ubicación geográfica le ha permitido establecer vínculos comerciales con grandes potencias europeas y con el resto del mundo convirtiéndose en un centro vital del comercio. Su balance macroeconómico solido ha permitido en las últimas décadas un desempleo bajo-medio debido en gran parte a que cuenta con una fuerza altamente calificada y educada gracias a su sistema de educación de alta calidad, otro factor importante a tener en cuenta es su banco central, el cual se encarga de la estabilidad económica mediante las tasas de interés, buscando un balance entre el crecimiento y la estabilidad de los precios (teniendo como objetivo una tasa del 2,4%). 
+DFF_long <- DFF |> 
+  pivot_longer(cols = c(U, I), 
+               names_to = "variable", 
+               values_to = "valor")
 
-En el caso de la inflación y para tener una estabilidad en los precios, su gobierno busca generar políticas fiscales que mantengan un presupuesto equilibrado con el objetico de reducir la deuda pública y tener un sistema eficiente de impuestos. Un factor clave que ayuda a los países bajos con su gran volumen de comercio es que cuenta con el puerto más grande de Europa ubicado en Róterdam manejando millones de toneladas métricas al año y siendo una puerta de entrada crucial para el comercio de Europa y del mundo. 
 
-</div>
+ggplot(DFF_long, aes(x = observation_date, y = valor, color = variable)) +
+  geom_line(size = 1) +
+  labs(
+    title = "Serie de tiempo: Desempleo (U) e Inflación (I) en Países Bajos",
+    x = "Fecha",
+    y = "Valor"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 10),   
+    axis.title = element_text(size = 10),   
+    axis.text = element_text(size = 7)      
+  )
 
-```{r, warning = FALSE}
+
+```
+
+```{r, warning = FALSE, echo = FALSE}
 summary(DFF$I)
-plor2<- ggplot(DFF, aes(y = I)) +
-  geom_boxplot(fill = "skyblue", alpha = 0.7) +
-  labs(title = "Caja de Bigotes - Inflacion (I)", y = "I") +
-  theme_minimal()
-plor2
-
 ```
 
-<div>
-
-Hemos encontrado que a lo largo del periodo estudiado la inflación típica de los países bajos ha estado entre un 1,3% y un 2,7% reflejando asi una economía estable durante la mayor parte del periodo. Uno de los picos más altos de inflación fue del 10% el cual probablemente se generó debido a episodios globales o tambien llamados crisis inflacionarias las cuales normalmente afectan a gran parte de Europa. Por último, podemos observar que hay una cercanía entre su media y su mediana (2,19 y 2,13 respectivamente) lo cual sugiere una distribución simétrica. 
-
-</div>
-
-```{r, warning=FALSE}
-plor<- ggplot(DFF, aes(y = U)) +
-  geom_boxplot(fill = "skyblue", alpha = 0.7) +
-  labs(title = "Caja de Bigotes - Desempleo (U)", y = "U") +
-  theme_minimal()
+```{r, warning=FALSE, echo= FALSE}
 summary(DFF$U)
-plor
 ```
-
-<div>
-
-Por el lado del desempleo observamos un rango moderado (entre el 5 y el 7%), así mismo nuevamente su media y mediana se encuentra bastante cerca una de la otra (6,08 y 6,11) lo cual si lo unimos con el rango obtenido concluimos que el desempleo ha sido estable y sin valores atípicos representados en el diagrama de bigotes. Analizando sus mínimos y máximos, observamos un 3,08 en su mínimo que refleja un periodo de pleno empleo y un 9,51 en su máximo que puede reflejar un periodo de recesión en toda Europa. 
-
-</div>
 
 ### Modelo:
 
@@ -145,24 +120,54 @@ $\beta_3 = -\alpha_1\leftthreetimes$
 
 </div>
 
+<div>
+
+Los $\alpha$ y los $\leftthreetimes$ nos van a ayudar a encontrar la nairu.
+
+</div>
+
+### Resultados:
+
 ```{r, warning=FALSE}
 #Prueba con lM
 modelo <- lm(I ~ lag(I,1) + U + lag(U,1), data=DFF)
 summary(modelo)
 ```
 
-<div>
-
 En este modelo podemos observar como existe significancia del 5% para $\beta_0$ y para $\beta_1$ una signifancia del 10%. Para los demás $\beta$ no tiene signifancia pero no es relevante para nuestro modelo.
 
-Los $\alpha$ y los $\leftthreetimes$ nos van a ayudar a encontrar la nairu.
+<div>
+
+$\beta_0$
 
 </div>
+
+### Conclusiones:
 
 <div>
 
-sultados: Juan PAblo
+Como pudimos observar en los resultados del modelo, la curva de Phillips sí se cumple para los Países Bajos; sí existe una disyuntiva entre el desempleo y la inflación en la economía, al menos en el corto plazo, demostrado gracias a que el $\beta_2$ es negativo, mostrándonos una pendiente negativa y una relación inversa entre estas dos variables.
+
+Además, según $\beta_2$ y su magnitud de -0.41, nos muestra que la disyuntiva es significativa al momento de tomar decisiones sobre las tasas de interés o políticas de fomento del empleo.
+
+Esto es predecible, ya que las políticas públicas dirigidas a fomentar la demanda agregada provocan, de mayor o menor manera, un efecto inflacionario.
+
+Por el lado de la NAIRU, no dio un resultado mayor al promedio de desempleo de los Países Bajos; esto, probablemente, porque los datos no son estacionarios en covarianzas, lo que quiere decir que estamos frente a un paseo aleatorio, lo que no nos permite hacer un análisis con exactitud de las dimensiones de los betas, especialmente en $\beta_3$, cuyo p-valor es de 92 %, lo que se aleja mucho de un nivel de significancia aceptable.
+
+Para futuras investigaciones, se podría usar un mayor número de datos para poder conseguir unos betas más acertados y una NAIRU más cercana al valor real de la tasa de desempleo.
+
+También, una adaptación del modelo a las condiciones exactas a las que se enfrentan los Países Bajos podría aproximarnos con mayor certeza a unos betas y una NAIRU reales.
+
+Por otro lado, se podría incluir un análisis de los modelos que incorpore la tasa de intervención del banco central, ya que esta podría tener un comportamiento fuera de lo normal debido a que el país ha enfrentado problemas de la "enfermedad holandés", lo que permitiría mejorar el análisis de la inflación y del desempleo en sus datos extremos.
 
 </div>
 
-## Conclusiones
+### Bibliografia:
+
+<div>
+
+World Bank, Inflation, consumer prices for the Netherlands \[FPCPITOTLZGNLD\], retrieved from FRED, Federal Reserve Bank of St. Louis; https://fred.stlouisfed.org/series/FPCPITOTLZGNLD, September 7, 2025.
+
+U.S. Bureau of Labor Statistics, Adjusted Unemployment Rate for Adults in Netherlands (DISCONTINUED) \[NLDURANAA\], retrieved from FRED, Federal Reserve Bank of St. Louis; https://fred.stlouisfed.org/series/NLDURANAA, September 7, 2025.
+
+</div>
