@@ -1,6 +1,9 @@
 ---
 title: "Curva de Phillips para Países Bajos"
-author: "Juan Diego Moreno Sánchez"
+author: 
+  - "Juan Pablo Lozano Méndez"
+  - "Thomas Camilo Vargas Bello"
+  - "Juan Diego Moreno Sánchez"
 date: "2025-09-07"
 format: pdf
 ---
@@ -43,9 +46,17 @@ DFF$observation_date <- as.Date(DFF$observation_date, format = "%Y-%m-%d")
  #limpieza de NA
 ```
 
-### Conceptos : Que es curva de phillips y la nairu
+### Conceptos : Que es la Curva de Phillips y la NAIRU
 
-deweeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeee eeeeeeeeeee e
+<div>
+
+La curva de Phillips es un modelo económico bajo el cual se plantea que existe una relación inversa entre la tasa de desempleo y los salarios nominales (más adelante tomados como la inflación), lo que implica que una menor tasa de desempleo genera mayor inflación.
+
+La crítica de Friedman nos dice que esta curva y esta relación inversa solo aplica para el corto plazo, ya que las expectativas de inflación ajustan el comportamiento de empresas y trabajadores, lo que significa que las personas saben que existirán intenciones del gobierno o del banco central por reducir la inflación o el desempleo, lo que provoca una expectativa de las firmas por no contratar y solamente capturar el excedente producto de la disminución de los salarios, lo que al final solo provocaría un aumento en la tasa de inflación.
+
+La NAIRU (Non-Accelerating Inflation Rate of Unemployment) es la tasa de desempleo natural a la cual se puede llegar sin provocar aumentos en la tasa de inflación, donde intentar llegar a una tasa inferior solo provocará un aumento en la inflación.
+
+</div>
 
 ### Analisis explotario: como era Paises Bajos, inflación y desempleo.
 
@@ -74,13 +85,31 @@ ggplot(DFF_long, aes(x = observation_date, y = valor, color = variable)) +
 
 ```
 
+<div>
+
+Como podemos observar en la gráfica, los Países Bajos tuvieron altas tasas de desempleo acompañadas por periodos de baja inflación alrededor de los años 80. Esto se debió a la "enfermedad holandesa", donde la salida de divisas y capitales produjo una reducción de la base monetaria, generando un proceso de deflación acompañado de la pérdida de factores productivos, lo que hizo que el desempleo aumentara. En la gráfica vemos cómo la economía se recupera de dicho golpe ajustando su tasa de desempleo e inflación.
+
+</div>
+
 ```{r, warning = FALSE, echo = FALSE}
 summary(DFF$I)
 ```
 
+<div>
+
+Hemos encontrado que a lo largo del periodo estudiado la inflación típica de los países bajos ha estado entre un 1,3% y un 2,7% reflejando asi una economía estable durante la mayor parte del periodo. Uno de los picos más altos de inflación fue del 10% el cual probablemente se generó debido a episodios globales o tambien llamados crisis inflacionarias las cuales normalmente afectan a gran parte de Europa. Por último, podemos observar que hay una cercanía entre su media y su mediana (2,19 y 2,13 respectivamente) lo cual sugiere una distribución simétrica.
+
+</div>
+
 ```{r, warning=FALSE, echo= FALSE}
 summary(DFF$U)
 ```
+
+<div>
+
+Por el lado del desempleo observamos un rango moderado (entre el 5 y el 7%), así mismo nuevamente su media y mediana se encuentra bastante cerca una de la otra (6,08 y 6,11) lo cual si lo unimos con el rango obtenido concluimos que el desempleo ha sido estable y sin valores atípicos representados en el diagrama de bigotes. Analizando sus mínimos y máximos, observamos un 3,08 en su mínimo que refleja un periodo de pleno empleo y un 9,51 en su máximo que puede reflejar un periodo de recesión en toda Europa. 
+
+</div>
 
 ### Modelo:
 
@@ -138,9 +167,69 @@ En este modelo podemos observar como existe significancia del 5% para $\beta_0$ 
 
 <div>
 
-$\beta_0$
+$\beta_0 = 3.84461$ nos muestra que si existe relación en la interacción del modelo
+
+$\beta_1= 0.30210$ es evidencia de que existe una relación postiva entre la inflación del periodo actual y la inflacíon del periodo pasado
+
+$\beta_2 = -0.41908$ acá se muestra que si existe una relación negativa entre la inflacíon y el desempleo, mostrando una posibles disyuntiva
+
+$\beta_3= 0.03396$ aca nos muestra que en un periodo anterior existe una relación positiva, el problema es que le $Pr(>|t|)$ de $0.912$ nos muestra que este valor esta muy lejos de ser confiable, solo podrias intepretar el signo del beta.
+
+Ahora recordamos que tenemos nuestro $\leftthreetimes$ y $\alpha$, con estos vamos a calcular el modelo de la NAIRU y encontrar su valor.
+
+Después de un calculo simple encontramos que:
+
+$\leftthreetimes = 0.0787$
+
+$\alpha_1 =-0.41908$
+
+$\alpha_0 = 0.0787$
+
+$-\frac{\alpha_0}{\alpha_1} = NAIRU$
+
+$NAIRU =  9.957$
 
 </div>
+
+```{r, warning = FALSE, echo = FALSE}
+# Define los coeficientes según tu modelo
+intercept <- 3.84461
+b_Ilag <- 0.30210
+b_U <- -0.41908
+b_Ulag <- 0.03396
+
+# Valores promedio para los retardos (ajusta si quieres)
+I_lag_mean <- mean(DFF$I, na.rm = TRUE)
+U_lag_mean <- mean(DFF$U, na.rm = TRUE)
+
+# NAIRU
+nairu_value <- 9.9
+
+# Rango extendido de desempleo (ejemplo: 0 a 12)
+U_values <- seq(0, 12, length.out = 200)
+
+# Inflación estimada para la línea
+I_values <- intercept + b_Ilag * I_lag_mean + b_U * U_values + b_Ulag * U_lag_mean
+
+# Data frame para la curva
+df_curve <- data.frame(U = U_values, I = I_values)
+
+# Graficar
+library(ggplot2)
+ggplot() +
+  geom_point(data = DFF, aes(x = U, y = I), color = "gray40", alpha = 0.6) +
+  geom_line(data = df_curve, aes(x = U, y = I), color = "blue", size = 1.2) +
+  geom_vline(xintercept = nairu_value, linetype = "dashed", color = "red", size = 1) +
+  annotate("text", x = nairu_value, y = max(DFF$I, na.rm = TRUE),
+           label = "NAIRU", color = "red", vjust = -0.5, angle = 90) +
+  labs(title = "Relación Inflación vs Desempleo (Curva estimada + Datos)",
+       x = "Tasa de desempleo (U)",
+       y = "Inflación (I)") +
+  theme_minimal()
+
+
+
+```
 
 ### Conclusiones:
 
@@ -169,5 +258,7 @@ Por otro lado, se podría incluir un análisis de los modelos que incorpore la t
 World Bank, Inflation, consumer prices for the Netherlands \[FPCPITOTLZGNLD\], retrieved from FRED, Federal Reserve Bank of St. Louis; https://fred.stlouisfed.org/series/FPCPITOTLZGNLD, September 7, 2025.
 
 U.S. Bureau of Labor Statistics, Adjusted Unemployment Rate for Adults in Netherlands (DISCONTINUED) \[NLDURANAA\], retrieved from FRED, Federal Reserve Bank of St. Louis; https://fred.stlouisfed.org/series/NLDURANAA, September 7, 2025.
+
+*“The Phillips curve suggests an inverse relationship between inflation and unemployment, meaning that as inflation rises, unemployment tends to decrease, and vice versa.”* — Investopedia
 
 </div>
